@@ -148,6 +148,11 @@ if __name__ == '__main__':
         log(f'{dataset} -> \t', end='')
         log(f'{datetime.datetime.now()}')
 
+        # k-fold cross validation 
+        # each time running this code
+        # comment to avoid execute this method
+        kfold(dataset, numFolds)
+
         for method in methods:
             log(f'{method}')
             
