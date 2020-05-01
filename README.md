@@ -13,7 +13,7 @@ These instructions will get you replicate the experiments carry out on your loca
 Firstly, go to folder src/algorithm/instance_selection/ris and run the code below:
 
 ```
-user@src/algorithm/instance_selection/ris> python setup.py build_ext --inplace
+user@src/algorithm/instance_selection/classification/ris> python setup.py build_ext --inplace
 ```
 
 This code above will compile helper functions of RIS, a cython implementation.
