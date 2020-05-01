@@ -59,8 +59,8 @@ class KeelDataSet:
 
         inp, out = self.get_data_target()
         
-        inp = to_numpy(inp)
-        out = to_numpy(out)
+        # inp = to_numpy(inp)
+        # out = to_numpy(out)
         # out = np.concatenate(out)
 
         minmax = MinMaxScaler()
@@ -73,11 +73,11 @@ class KeelDataSet:
                 x_train = minmax.fit_transform(x_train)
                 x_test = minmax.fit_transform(x_test)
 
-            data = to_data(x_train, y_train, axis=1)
+            data = to_data(x_train, y_train.reshape(y_train.shape[0], 1), axis=1)
 
             fold_train = KeelDataSet(('{name}-{num}-{f}tra.dat').format(name = self.name, num=num_folders, f = (i+1)), self.attributes, data, self.inputs, self.outputs)
 
-            data = to_data(x_test, y_test, axis=1)
+            data = to_data(x_test, y_test.reshape(y_test.shape[0], 1), axis=1)
             fold_test = KeelDataSet(('{name}-{num}-{f}tst.dat').format(name = self.name, num = num_folders, f = (i+1)), self.attributes, data, self.inputs, self.outputs)
 
             folders.append((fold_train, fold_test))
