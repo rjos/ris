@@ -142,7 +142,7 @@ if __name__ == '__main__':
     methods = ['ris1', 'ris2', 'ris3']
 
     # Set datasets
-    datasets = ['appendicitis']
+    datasets = ['adult']
 
     for dataset in datasets:
         log(f'{dataset} -> \t', end='')
