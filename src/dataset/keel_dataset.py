@@ -144,7 +144,7 @@ def load_from_file(file):
                 builder = float
             elif a_type == 'integer':
                 a_type = KeelAttribute.TYPE_INTEGER
-                builder = int
+                builder = float
             elif a_type == 'nominal':
                 a_type = KeelAttribute.TYPE_NOMINAL
                 builder = str
