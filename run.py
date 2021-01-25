@@ -159,7 +159,7 @@ if __name__ == '__main__':
             try:
                 results = dict()
                 # Run instance selection method for all datasets
-                for i in range(3, (numFolds + 1)):
+                for i in range(1, (numFolds + 1)):
                     log(f'Fold: {i}', end='')
 
                     result = ris(dataset, method, THRESHOLDERS, i, n_jobs)
