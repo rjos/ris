@@ -25,34 +25,6 @@ cdef DTYPE_t c_euclidean(DTYPE_t* a, DTYPE_t* b, INT_t s) nogil:
 def euclidean(DTYPE_t[:] a, DTYPE_t[:] b):
     return c_euclidean(&a[0], &b[0], a.shape[0])
 
-def classify(DTYPE_t[:, :] test not None, DTYPE_t[:, :] selection not None, DTYPE_t[:] radius):
-    cdef:
-        np.ndarray[INT_t, ndim=1] predictions = np.zeros((test.shape[0],), dtype=np.int_)
-        DTYPE_t* x_test
-        DTYPE_t* x_sel
-        INT_t n, m, s, idx
-        DTYPE_t d_min
-    
-    n, m = test.shape[0], test.shape[1]
-    s = selection.shape[0]
-
-    for i in range(n):
-        x_test = &test[i, 0]
-        idx = 0
-        d_min = INFINITY
-        for j in range(s):
-            x_sel = &selection[j, 0]
-            r = radius[j]
-
-            d = c_euclidean(x_test, x_sel, m)
-            d = (d / r)
-
-            if d < d_min:
-                idx = j
-                d_min = d
-
-        predictions[i] = idx
-    return predictions
 
 def relevants(INT_t[:] idx not None, DTYPE_t[:, :] scores not None, DTYPE_t[:, :] radius not None, DTYPE_t threshold, DTYPE_t[:, :] dataset not None, INT_t[:] targets not None):
     cdef:
@@ -96,6 +68,7 @@ def relevants(INT_t[:] idx not None, DTYPE_t[:, :] scores not None, DTYPE_t[:, :
             s = len(selected_set)
     
     return selected_set, selected_radius
+
 
 def recompute_radius(INT_t[:] idx not None, DTYPE_t[:, :] radius not None, DTYPE_t[:, :] dataset not None, INT_t[:] targets not None, INT_t n_jobs=1):
     cdef:

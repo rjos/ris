@@ -5,7 +5,7 @@ import timeit
 import numpy as np
 
 from src.algorithm.instance_selection.classification.ris.ris_helper import euclidean, _scores_radius as sr, \
-    recompute_radius as rr, classify as _classify, relevants as _relevants
+    recompute_radius as rr, relevants as _relevants
     
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import euclidean_distances
@@ -177,9 +177,12 @@ def classify(X_test, X_selection, radius):
     # Sum const to avoid division by zero
     radius_temp = radius + 1e-8
 
-    # Classify instances and return index of train samples
-    # to get class label
-    index = _classify(X_test, X_selection, radius_temp)
+    # Compute distance between Test and Selection instances
+    dists = euclidean_distances(X_test, X_selection)
+    dists = dists / radius_temp
+
+    # Get index of train samples to get class label
+    index = np.argmin(dists, axis=1)
     
     return index
 
