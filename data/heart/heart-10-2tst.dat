@@ -1,0 +1,45 @@
+@relation heart-10-2tst.dat
+@attribute Age integer [29, 77]
+@attribute Sex integer [0, 1]
+@attribute ChestPainType integer [1, 4]
+@attribute RestBloodPressure integer [94, 200]
+@attribute SerumCholestoral integer [126, 564]
+@attribute FastingBloodSugar integer [0, 1]
+@attribute ResElectrocardiographic integer [0, 2]
+@attribute MaxHeartRate integer [71, 202]
+@attribute ExerciseInduced integer [0, 1]
+@attribute Oldpeak real [0.0, 62.0]
+@attribute Slope integer [1, 3]
+@attribute MajorVessels integer [0, 3]
+@attribute Thal integer [3, 7]
+@attribute Class integer [1, 2]
+@inputs Age, Sex, ChestPainType, RestBloodPressure, SerumCholestoral, FastingBloodSugar, ResElectrocardiographic, MaxHeartRate, ExerciseInduced, Oldpeak, Slope, MajorVessels, Thal
+@outputs Class
+@data
+0, 1, 0, 0, 0, 0, 0, 0, 0, 0.08823529411764705, 0, 0, 1, 2
+0, 1, 0, 0, 0, 0, 1, 0, 0, 0.0, 0, 0, 0, 1
+0, 1, 0, 0, 0, 0, 1, 0, 1, 0.5294117647058824, 1, 0, 0, 1
+0, 1, 0, 0, 0, 0, 1, 0, 0, 0.058823529411764705, 1, 0, 0, 1
+0, 1, 1, 0, 0, 0, 0, 1, 0, 0.3529411764705882, 1, 0, 0, 1
+0, 1, 1, 0, 0, 0, 1, 0, 0, 0.6764705882352942, 0, 0, 0, 1
+0, 1, 0, 0, 0, 0, 1, 0, 0, 0.0, 0, 0, 0, 2
+0, 1, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 1
+0, 1, 1, 0, 0, 0, 0, 1, 0, 0.0, 0, 0, 1, 2
+0, 1, 0, 0, 0, 1, 0, 0, 0, 0.6470588235294118, 1, 0, 0, 2
+0, 1, 1, 0, 0, 0, 1, 0, 1, 0.1764705882352941, 1, 0, 0, 2
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0.3235294117647059, 1, 0, 0, 1
+0, 0, 1, 1, 1, 0, 0, 0, 1, 1.0, 1, 0, 0, 2
+0, 1, 1, 0, 0, 0, 0, 0, 1, 0.058823529411764705, 1, 0, 1, 2
+0, 0, 0, 0, 0, 0, 1, 0, 1, 0.0, 0, 0, 0, 1
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0.47058823529411764, 1, 0, 0, 1
+0, 0, 1, 0, 0, 0, 0, 0, 0, 0.058823529411764705, 1, 0, 0, 1
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 1
+0, 1, 0, 0, 0, 0, 1, 0, 0, 0.058823529411764705, 1, 1, 1, 2
+0, 1, 0, 0, 0, 1, 1, 0, 0, 0.0, 0, 1, 0, 1
+0, 1, 0, 0, 0, 1, 0, 0, 0, 0.0, 0, 0, 0, 1
+1, 1, 1, 0, 0, 0, 1, 0, 1, 0.0, 0, 1, 0, 2
+0, 1, 0, 0, 0, 0, 0, 0, 1, 0.5294117647058824, 1, 0, 1, 2
+0, 1, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 1
+0, 0, 0, 0, 0, 1, 1, 0, 0, 0.029411764705882353, 0, 0, 0, 1
+0, 1, 1, 0, 0, 0, 0, 0, 1, 0.4117647058823529, 0, 0, 1, 2
+0, 1, 0, 0, 0, 0, 1, 0, 0, 0.08823529411764705, 1, 0, 0, 2

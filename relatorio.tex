@@ -1,0 +1,715 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[portuges]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage{multicol,lipsum}
+\usepackage{indentfirst}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+\setlength{\parindent}{0.6cm}
+\newcommand\tab[1][0.6cm]{\hspace*{#1}}
+\graphicspath{ {./images/} }
+
+
+\begin{document}
+\sloppy
+%\maketitle
+\begin{titlepage}
+	\begin{center}
+
+	%\begin{figure}[!ht]
+	%\centeoptdigits
+	%\includegraphics[width=2cm]{c:/ufba.jpg}
+	%\end{figure}
+
+		\Huge{Universidade Federal de Pernambuco}\\
+		\vspace{15pt}
+        \vspace{95pt}
+        \textbf{\LARGE{Relatório parcial}}\\
+		%\title{{\large{Título}}}
+		\vspace{3,5cm}
+	\end{center}
+
+	\begin{flushleft}
+		\begin{tabbing}
+			Wallace Soares\\
+	\end{tabbing}
+ \end{flushleft}
+	\vspace{1cm}
+
+	\begin{center}
+		\vspace{\fill}
+			 Novembro -  2020\\
+
+			\end{center}
+\end{titlepage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% % % % % % % % % % % % % % % % % % % % % % % % % %
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+
+\newpage
+\pagenumbeoptdigits{arabic}
+% % % % % % % % % % % % % % % % % % % % % % % % % % %
+\section{Introdução}
+O objetivo deste relatório é trazer os resultados de testes de classificação utilizando combinações entre o algoritmo de seleção de protótipos, \textit{Ranking-based instance selection} \cite{ris} - RIS, e o algoritmo de seleção de atributos do projeto \textit{scikit-feature}\cite{li2018feature}  chamado \textit{gini index} que se baseia na dispersão dos atributos com base nas classes. Os testes foram realizados com as seguintes base de dados: \textit{spambase}\cite{spambase}, satimage\cite{satimage}, coil2000\cite{coil2000} e \textit{optdigitis}\cite{optdigits}. Para cada uma das bases de dados foram recolhidos os percentuais médios e seus desvios-padrões para os acertos, reduções do número de instâncias e reduções do número de atributos.
+\newpage
+\section{Características das bases de dados}
+\begin{table}[h!]
+  \begin{center}
+    \caption{Características das bases de dados utilizadas}
+    \label{tab:table10}
+    \begin{tabular}{l|c|c|c}
+      \textbf{Base de dados} & \textbf{ Número de instâncias } & \textbf{Número de atributos} & \textbf{Classes} \\
+      \hline
+      adult \cite{adult} & 48842  & $57$ & 2 \\
+      \hline
+      appendicitis \cite{Appendicitis} & 106  & $57$ & 2 \\
+      \hline
+      balance \cite{Balance} & 625  & $57$ & 3 \\
+      \hline
+      bupa \cite{Bupa} & 345  & $57$ & 2 \\
+      \hline
+      coil2000 \cite{coil2000} & 9822  & $57$ & 2 \\
+      \hline
+      connect-4 \cite{connect-4} & 67557  & $57$ & 3 \\
+      \hline
+      contraceptive \cite{contraceptive} & 1473  & $57$ & 2 \\
+      \hline
+      haberman \cite{haberman} & 306  & $57$ & 2 \\
+      \hline
+      hayes-roth \cite{hayes} & 160  & $57$ & 2 \\
+      \hline
+      heart \cite{heart} & 270  & $57$ & 2 \\
+      \hline
+      ionosphere \cite{Ionosphere} & 351  & $57$ & 2 \\
+      \hline
+      led7digit \cite{led7digit} & 500  & $57$ & 10 \\
+      \hline
+      marketing \cite{Marketing} & 8993  & $57$ & 9 \\
+      \hline
+      monk-2 \cite{monk-2} & 432  & $57$ & 2 \\
+      \hline
+      movement-libras \cite{libras} & 360  & $57$ & 15 \\
+      \hline
+      pima \cite{pima} & 768  & $57$ & 2 \\
+      \hline
+      satimage\cite{satimage} & $6435$ & $36$ & 7 \\
+      \hline
+      segment\cite{segment} & $2310$ & $85$ & 7 \\
+      \hline
+      titanic\cite{titanic} & $2201$ & $64$ & 2 \\
+      \hline
+      vowel\cite{vowel} & $990$ & $64$ & 11 \\
+      \hline
+      wine\cite{wine} & $178$ & $64$ & 3 \\
+      \hline
+      winequalty-red\cite{red-wine} & $1599$ & $64$ & 11 \\
+      \hline
+      winequality-white\cite{white-wine} & $4898$ & $64$ & 11 \\
+      \hline
+      yeast\cite{yeast} & $1484$ & $64$ & 10 \\
+
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Como a tabela acima demonstra, o objetivo dos experimentos feitos neste relatório é verificar se existe uma relação entre a quantidade de atributos e o resultado dos experimentos. Em especial nos casos das bases \textit{spambase} e \textit{coil2000} é esperado que os resultados obedeçam padrões parecidos, mesmo dado a diferença da massa de dados. As bases \textit{satimage} e \textit{optdigits} servirão para observar o comportamento do algoritmo em situações de múltiplas classes.
+
+\section{Experimentos}
+\subsection{Formato dos experimentos}
+Para cada base de dados foram realizados 3 tipos de abordagens para classificação.
+\begin{itemize}
+	\item Execução do RIS em seu formato original. Utilizando as suas variações: RIS1, RIS2, RIS3.
+	\item Execução do RIS em seu formato original. Utilizando as suas variações: RIS1, RIS2, RIS3 e após selecionar os atributos(FS).
+	\item Seleção de atributos(FS) e somente após executar o RIS em seu formato original. Utilizando as suas variações: RIS1, RIS2, RIS3.
+\end{itemize}
+
+\subsection{Índice de Gini}
+
+O algoritmo do \textit{gini index} foi criado inicialmente para medir a distribuição de renda em uma população. Podemos utilizá-lo em modelagem de dados porque seu cálculo permite saber quão dispersos estão os atributos com base nas classes. Seu objetivo é medir com que frequência um elemento escolhido aleatoriamente será classificado de forma incorreta. Funciona da seguinte forma:
+
+\begin{itemize}
+	\item Cada atributo possui um índice de \textit{gini} que varia entre 0 e 1.
+	\item Para cada coluna de atributos o algoritmo seleciona os valores únicos que descrevem aquele atributo ao longo da base de dados.
+	\item Então o algoritmo testa para todos estes valores únicos e seleciona as instâncias que possuem classes com valores dos atributos menores ou iguais ao que esta sendo testado. Coloca-os em um conjunto. E faz o mesmo para valores maiores.
+	\item Para cada atributo é calculado, através de todos os seus valores únicos, o \textit{gini index}. Para estes valores únicos, aquele que possui o menor valor de \textit{gini} será considerado o \textit{gini index} para aquele atributo.
+	\item O atributo que melhor definir que classe cada instância pertence vai possuir um valor de \textit{gini} menor, e sendo assim, é o que mais contribui para identifica-la.
+	\item Os atributos escolhidos são aqueles que possuem um \textit{gini index} menor que a média de todos os outros atributos.
+\end{itemize}
+
+\subsection{RIS1}
+Durante a fase de teste do RIS1 já foi possível observar que o algoritmo \textit{gini index} não esta preparado para lidar com problemas de múltiplas classes. Para as bases \textit{satimage} e \textit{optdigits} observamos um desempenho muito abaixo das bases \textit{coil2000} e \textit{spambase}. Apesar do algoritmo explicitamente iterar através de todos os valores possíveis de classe, durante os testes obtivemos desempenhos abaixo de 35\% de média de acerto.
+\newline
+\indent Com relação aos testes das bases \textit{spambase} e \textit{coil2000} observamos um comportamento, em certa maneira, parecido. Para ambas a variação em desempenho na média de acerto foi parecido em valores absolutos. Considerando o desvio padrão observamos que a base \textit{spambase} teve o desempenho um pouco mais afetado.
+\newline
+
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de acerto utilizando o RIS1 (\%)}
+    \label{tab:table1}
+    \begin{tabular}{l|c|c|c}
+      \textbf{Base de dados} & \textbf{ RIS1 } & \textbf{FS - RIS1} & \textbf{RIS1 - FS}\\
+        \hline
+        $adult$ & $\textbf{75.2} \pm \textbf{0.08}$  & $74.76 \pm 1.53$ & $75.07 +  \pm 0.5$ \\
+        \hline
+        $appendicitis$ & $78.76 \pm 8.71$  & $\textbf{81.1} \pm \textbf{3.48}$ & $79.32 +  \pm 6.79$ \\
+        \hline
+        $balance$ & $43.73 \pm 8.48$  & $\textbf{57.97} \pm \textbf{7.75}$ & $55.01 +  \pm 8.1$ \\
+        \hline
+        $bupa$ & $\textbf{58.06} \pm \textbf{2.52}$  & $57.43 \pm 3.06$ & $57.7 +  \pm 2.36$ \\
+        \hline
+        $coil2000$ & $93.96 \pm 0.33$  & $\textbf{94.02} \pm \textbf{0.12}$ & $93.7 +  \pm 1.09$ \\
+        \hline
+        $connect-4$ & $65.05 \pm 1.29$  & $64.79 \pm 1.73$ & $\textbf{65.05} +  \pm \textbf{2.07}$ \\
+        \hline
+        $contraceptive$ & $42.06 \pm 1.63$  & $42.64 \pm 0.85$ & $\textbf{43.22} +  \pm \textbf{3.41}$ \\
+        \hline
+        $haberman$ & $\textbf{73.28} \pm \textbf{1.43}$  & $72.7 \pm 4.51$ & $72.58 +  \pm 3.83$ \\
+        \hline
+        $hayes-roth$ & $36.72 \pm 10.31$  & $\textbf{46.31} \pm \textbf{15.53}$ & $43.96 +  \pm 9.11$ \\
+        \hline
+        $heart$ & $55.64 \pm 1.47$  & $\textbf{56.52} \pm \textbf{4.98}$ & $55.09 +  \pm 2.94$ \\
+        \hline
+        $ionosphere$ & $63.38 \pm 3.15$  & $\textbf{64.74} \pm \textbf{2.95}$ & $63.51 +  \pm 6.97$ \\
+        \hline
+        $led7digit$ & $12.34 \pm 3.15$  & $\textbf{16.95} \pm \textbf{5.09}$ & $14.93 +  \pm 4.19$ \\
+        \hline
+        $marketing$ & $17.63 \pm 1.9$  & $\textbf{20.55} \pm \textbf{3.64}$ & $18.83 +  \pm 1.29$ \\
+        \hline
+        $monk-2$ & $52.38 \pm 3.76$  & $\textbf{66.75} \pm \textbf{11.51}$ & $54.39 +  \pm 5.01$ \\
+        \hline
+        $movement_libras$ & $6.82 \pm 2.21$  & $\textbf{10.48} \pm \textbf{4.99}$ & $9.88 +  \pm 4.64$ \\
+        \hline
+        $pima$ & $63.25 \pm 5.69$  & $\textbf{64.79} \pm \textbf{4.42}$ & $64.57 +  \pm 3.12$ \\
+        \hline
+        $satimage$ & $24.67 \pm 1.63$  & $28.42 \pm 9.33$ & $\textbf{32.14} +  \pm \textbf{6.83}$ \\
+        \hline
+        $segment$ & $15.67 \pm 1.79$  & $21.75 \pm 12.43$ & $\textbf{27.17} +  \pm \textbf{15.17}$ \\
+        \hline
+        $titanic$ & $67.21 \pm 4.63$  & $\textbf{67.73} \pm \textbf{0.0}$ & $67.68 +  \pm 0.6$ \\
+        \hline
+        $vowel$ & $8.24 \pm 2.36$  & $\textbf{11.69} \pm \textbf{5.54}$ & $10.39 +  \pm 4.89$ \\
+        \hline
+        $wine$ & $48.36 \pm 7.82$  & $50.28 \pm 11.53$ & $\textbf{51.01} +  \pm \textbf{12.13}$ \\
+        \hline
+        $winequality-red$ & $38.74 \pm 3.36$  & $39.89 \pm 7.44$ & $\textbf{42.5} +  \pm \textbf{4.37}$ \\
+        \hline
+        $winequality-white$ & $\textbf{41.41} \pm \textbf{3.62}$  & $39.27 \pm 7.96$ & $40.2 +  \pm 4.41$ \\
+        \hline
+        $yeast$ & $27.73 \pm 4.99$  & $\textbf{31.18} \pm \textbf{3.33}$ & $30.25 +  \pm 4.72$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Olhando para os dados de redução de instâncias temos a indicação do porquê obtivemos um pior desempenho na base \textit{spambase.} Nos três tipos de experimento utilizados, \textit{spambase} foi a base que teve a maior redução de instâncias. Apesar de, em certa maneira, este comportamento beneficiar o tempo de processamento, é possível que também prejudique a acurácia do sistema.
+
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de redução de instâncias utilizando o RIS1 (\%)}
+    \label{tab:table2}
+    \begin{tabular}{l|c|c|c}
+      \textbf{Base de dados} & \textbf{ RIS1 } & \textbf{FS - RIS1} & \textbf{RIS1 - FS}\\
+        \hline
+        $adult$ & $68.82 \pm 11.45$  & $\textbf{71.04} \pm \textbf{10.84}$ & $68.71 +  \pm 11.48$ \\
+        \hline
+        $appendicitis$ & $91.82 \pm 4.19$  & $\textbf{92.24} \pm \textbf{3.79}$ & $91.02 +  \pm 4.71$ \\
+        \hline
+        $balance$ & $\textbf{27.44} \pm \textbf{26.84}$  & $19.91 \pm 23.9$ & $27.22 +  \pm 26.64$ \\
+        \hline
+        $bupa$ & $62.37 \pm 15.3$  & $\textbf{63.78} \pm \textbf{15.37}$ & $62.07 +  \pm 15.55$ \\
+        \hline
+        $coil2000*$ & $37.02 \pm 19.27$  & $\textbf{82.34} \pm \textbf{5.83}$ & $80.0 +  \pm 6.57$ \\
+        \hline
+        $connect-4$ & $41.16 \pm 21.1$  & $43.83 \pm 20.9$ & $\textbf{47.96} +  \pm \textbf{19.85}$ \\
+        \hline
+        $contraceptive$ & $\textbf{58.19} \pm \textbf{18.21}$  & $39.12 \pm 28.25$ & $57.96 +  \pm 18.38$ \\
+        \hline
+        $haberman$ & $\textbf{68.31} \pm \textbf{11.79}$  & $27.82 \pm 12.92$ & $68.07 +  \pm 12.02$ \\
+        \hline
+        $hayes-roth$ & $29.83 \pm 23.96$  & $25.41 \pm 19.57$ & $\textbf{31.41} +  \pm \textbf{24.4}$ \\
+        \hline
+        $heart*$ & $45.54 \pm 20.31$  & $\textbf{67.42} \pm \textbf{21.94}$ & $64.61 +  \pm 17.06$ \\
+        \hline
+        $ionosphere$ & $\textbf{42.76} \pm \textbf{15.71}$  & $41.96 \pm 12.11$ & $41.43 +  \pm 16.3$ \\
+        \hline
+        $led7digit$ & $54.96 \pm 38.46$  & $41.99 \pm 38.51$ & $\textbf{56.23} +  \pm \textbf{37.81}$ \\
+        \hline
+        $marketing$ & $56.04 \pm 28.57$  & $\textbf{58.18} \pm \textbf{29.85}$ & $55.96 +  \pm 28.46$ \\
+        \hline
+        $monk-2$ & $45.41 \pm 17.78$  & $28.08 \pm 22.75$ & $\textbf{46.77} +  \pm \textbf{18.83}$ \\
+        \hline
+        $movement_libras$ & $\textbf{85.46} \pm \textbf{12.96}$  & $51.66 \pm 37.42$ & $85.14 +  \pm 13.52$ \\
+        \hline
+        $pima$ & $68.0 \pm 13.02$  & $\textbf{79.78} \pm \textbf{9.05}$ & $68.25 +  \pm 12.97$ \\
+        \hline
+        $satimage*$ & $34.73 \pm 17.39$  & $37.2 \pm 25.55$ & $\textbf{70.14} +  \pm \textbf{18.05}$ \\
+        \hline
+        $segment$ & $55.2 \pm 37.89$  & $\textbf{67.23} \pm \textbf{35.54}$ & $54.44 +  \pm 37.79$ \\
+        \hline
+        $titanic$ & $34.98 \pm 21.62$  & $27.19 \pm 12.14$ & $\textbf{34.99} +  \pm \textbf{21.61}$ \\
+        \hline
+        $vowel$ & $48.88 \pm 34.73$  & $\textbf{50.78} \pm \textbf{37.53}$ & $48.42 +  \pm 36.25$ \\
+        \hline
+        $wine$ & $83.09 \pm 13.7$  & $\textbf{87.51} \pm \textbf{12.75}$ & $83.37 +  \pm 13.48$ \\
+        \hline
+        $winequality-red$ & $41.28 \pm 21.28$  & $23.96 \pm 25.28$ & $\textbf{41.29} +  \pm \textbf{21.31}$ \\
+        \hline
+        $winequality-white$ & $\textbf{47.16} \pm \textbf{23.79}$  & $32.41 \pm 28.87$ & $46.93 +  \pm 23.85$ \\
+        \hline
+        $yeast$ & $\textbf{42.79} \pm \textbf{22.26}$  & $30.76 \pm 22.45$ & $42.31 +  \pm 22.27$ \\
+\hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Na redução de atributos observamos um comportamento que pode ser a causa da baixa acurácia em bases com múltiplas classes. Relembrando, o algoritmo criado para reduzir o número de atributos faz a seleção da seguinte forma:
+
+\begin{itemize}
+    \item Utilizando o \textit{gini index} calculamos os valores de \textit{gini} para todos os atributos da base de dados.
+    \item Após estes valores calculados tiramos a média entre esses valores.
+    \item Aqueles atributos que possuem índice de \textit{gini} menor ou igual que média entre os outros são os selecionados.
+\end{itemize}
+
+Sabendo disso, observamos que ao aplicar este método em \textit{satimage} e em \textit{optdigits} a redução é próxima aos 100\%. Ao observar este comportamento podemos supor que as múltiplas classes criam uma dispersão tão grande entre as classes que o \textit{gini index} é incapaz de executar de forma satisfatória a seleção dos atributos.
+
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de redução de atributos utilizando o RIS1 (\%)}
+    \label{tab:table3}
+    \begin{tabular}{l|c|c}
+      \textbf{Base de dados} &\textbf{FS - RIS1} & \textbf{RIS1 - FS}\\
+        \hline
+        $adult$ & $64.29 \pm 0.0$  & $\textbf{89.45} \pm \textbf{10.82}$ \\
+        \hline
+        $appendicitis$ & $53.57 \pm 6.19$  & $\textbf{81.82} \pm \textbf{12.13}$ \\
+        \hline
+        $balance$ & $\textbf{75.0} \pm \textbf{0.0}$  & $62.5 \pm 17.27$ \\
+        \hline
+        $bupa$ & $62.5 \pm 11.02$  & $\textbf{80.87} \pm \textbf{8.16}$ \\
+        \hline
+        $coil2000$ & $67.21 \pm 1.24$  & $\textbf{96.08} \pm \textbf{8.68}$ \\
+        \hline
+        $connect-4$ & $66.67 \pm 0.0$  & $\textbf{90.94} \pm \textbf{11.23}$ \\
+        \hline
+        $contraceptive$ & $\textbf{88.89} \pm \textbf{0.0}$  & $74.37 \pm 11.16$ \\
+        \hline
+        $haberman$ & $66.67 \pm 0.0$  & $\textbf{66.67} \pm \textbf{0.0}$ \\
+        \hline
+        $hayes-roth$ & $\textbf{75.0} \pm \textbf{0.0}$  & $53.41 \pm 19.65$ \\
+        \hline
+        $heart$ & $50.0 \pm 3.85$  & $\textbf{82.52} \pm \textbf{17.99}$ \\
+        \hline
+        $ionosphere$ & $67.42 \pm 2.0$  & $\textbf{88.12} \pm \textbf{14.68}$ \\
+        \hline
+        $led7digit$ & $\textbf{85.71} \pm \textbf{0.0}$  & $75.65 \pm 13.48$ \\
+        \hline
+        $marketing$ & $\textbf{92.31} \pm \textbf{0.0}$  & $81.82 \pm 17.13$ \\
+        \hline
+        $monk-2$ & $66.67 \pm 0.0$  & $\textbf{78.22} \pm \textbf{9.52}$ \\
+        \hline
+        $movement_libras$ & $\textbf{98.89} \pm \textbf{0.0}$  & $93.43 \pm 16.88$ \\
+        \hline
+        $pima$ & $62.5 \pm 0.0$  & $\textbf{82.95} \pm \textbf{10.0}$ \\
+        \hline
+        $satimage$ & $\textbf{97.22} \pm \textbf{0.0}$  & $68.02 \pm 22.41$ \\
+        \hline
+        $segment$ & $\textbf{94.74} \pm \textbf{0.0}$  & $88.22 \pm 13.49$ \\
+        \hline
+        $titanic$ & $\textbf{66.67} \pm \textbf{0.0}$  & $64.39 \pm 8.4$ \\
+        \hline
+        $vowel$ & $\textbf{92.31} \pm \textbf{0.0}$  & $89.07 \pm 8.42$ \\
+        \hline
+        $wine$ & $55.77 \pm 3.33$  & $\textbf{66.26} \pm \textbf{17.37}$ \\
+        \hline
+        $winequality-red$ & $\textbf{90.91} \pm \textbf{0.0}$  & $70.14 \pm 16.1$ \\
+        \hline
+        $winequality-white$ & $\textbf{90.91} \pm \textbf{0.0}$  & $84.71 \pm 11.51$ \\
+        \hline
+        $yeast$ & $\textbf{87.5} \pm \textbf{0.0}$  & $84.38 \pm 6.86$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+\newpage
+
+\includegraphics[width=13cm]{images/ris1_instance.png}
+\includegraphics[width=13cm]{images/ris1_attr.png}
+
+\subsection{RIS2}
+Para o caso do RIS2, em que as instâncias são normalizadas por classe para que não haja influência de uma classe na outra, percebemos uma piora em cada teste. Não somente na média de acerto, como também no desvio-padrão. O único teste em que de fato houve uma melhora foi na base \textit{satimage}. Porém é interessante observar, apesar do resultado ruim, que a classe \textit{optdigits} não sofreu praticamente nenhuma alteração no seu desempenho.
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de acerto utilizando o RIS2 (\%)}
+    \label{tab:table4}
+    \begin{tabular}{l|c|c|c}
+      \textbf{Base de dados} & \textbf{ RIS2 } & \textbf{FS - RIS2} & \textbf{RIS2 - FS}\\
+        \hline
+        $adult$ & $\textbf{73.34} \pm \textbf{7.53}$  & $69.53 \pm 3.58$ & $68.97 +  \pm 6.79$ \\
+        \hline
+        $appendicitis$ & $70.53 \pm 16.8$  & $\textbf{81.9} \pm \textbf{7.58}$ & $70.53 +  \pm 17.96$ \\
+        \hline
+        $balance$ & $35.42 \pm 11.05$  & $39.7 \pm 9.35$ & $\textbf{50.12} +  \pm \textbf{6.7}$ \\
+        \hline
+        $bupa$ & $\textbf{55.76} \pm \textbf{8.45}$  & $48.95 \pm 7.52$ & $53.87 +  \pm 8.69$ \\
+        \hline
+        $coil2000$ & $52.49 \pm 35.94$  & $\textbf{90.96} \pm \textbf{10.46}$ & $85.86 +  \pm 16.93$ \\
+        \hline
+        $connect-4$ & $62.41 \pm 4.12$  & $\textbf{63.23} \pm \textbf{3.88}$ & $53.27 +  \pm 11.55$ \\
+        \hline
+        $contraceptive$ & $\textbf{40.62} \pm \textbf{3.14}$  & $38.02 \pm 4.25$ & $37.52 +  \pm 5.14$ \\
+        \hline
+        $haberman$ & $\textbf{63.34} \pm \textbf{11.25}$  & $59.29 \pm 11.95$ & $49.29 +  \pm 13.94$ \\
+        \hline
+        $hayes-roth$ & $30.47 \pm 11.22$  & $\textbf{49.72} \pm \textbf{14.44}$ & $39.49 +  \pm 15.24$ \\
+        \hline
+        $heart$ & $56.1 \pm 6.76$  & $\textbf{58.54} \pm \textbf{8.18}$ & $54.38 +  \pm 10.24$ \\
+        \hline
+        $ionosphere$ & $46.95 \pm 12.98$  & $\textbf{56.33} \pm \textbf{14.25}$ & $53.64 +  \pm 12.59$ \\
+        \hline
+        $led7digit$ & $10.64 \pm 4.04$  & $\textbf{18.57} \pm \textbf{2.47}$ & $14.93 +  \pm 5.05$ \\
+        \hline
+        $marketing$ & $14.4 \pm 2.16$  & $\textbf{17.27} \pm \textbf{4.78}$ & $14.9 +  \pm 4.18$ \\
+        \hline
+        $monk-2$ & $49.18 \pm 5.1$  & $\textbf{65.49} \pm \textbf{10.53}$ & $54.15 +  \pm 12.69$ \\
+        \hline
+        $movement_libras$ & $6.94 \pm 2.48$  & $11.99 \pm 5.03$ & $\textbf{12.94} +  \pm \textbf{5.63}$ \\
+        \hline
+        $pima$ & $40.47 \pm 8.67$  & $\textbf{65.05} \pm \textbf{8.49}$ & $54.1 +  \pm 11.3$ \\
+        \hline
+        $satimage$ & $16.81 \pm 7.01$  & $24.69 \pm 7.24$ & $\textbf{42.05} +  \pm \textbf{7.39}$ \\
+        \hline
+        $segment$ & $15.75 \pm 1.75$  & $30.58 \pm 15.63$ & $\textbf{34.41} +  \pm \textbf{16.47}$ \\
+        \hline
+        $titanic$ & $57.01 \pm 13.72$  & $\textbf{77.67} \pm \textbf{1.78}$ & $67.26 +  \pm 7.78$ \\
+        \hline
+        $vowel$ & $8.29 \pm 2.07$  & $\textbf{12.57} \pm \textbf{7.5}$ & $11.95 +  \pm 4.76$ \\
+        \hline
+        $wine$ & $\textbf{56.96} \pm \textbf{7.59}$  & $51.84 \pm 11.25$ & $52.12 +  \pm 12.11$ \\
+        \hline
+        $winequality-red$ & $\textbf{39.12} \pm \textbf{4.4}$  & $33.93 \pm 10.56$ & $33.88 +  \pm 6.69$ \\
+        \hline
+        $winequality-white$ & $\textbf{30.05} \pm \textbf{8.56}$  & $28.03 \pm 13.83$ & $28.36 +  \pm 7.08$ \\
+        \hline
+        $yeast$ & $13.19 \pm 5.38$  & $\textbf{27.85} \pm \textbf{9.3}$ & $15.85 +  \pm 9.98$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+\newline
+\indent Para a redução no número de instâncias podemos observar que no geral, e seguindo \cite{ris}, obtivemos valores maiores que no RIS1, principalmente para a base \textit{coil2000}. Entretanto deve-se destacar que apesar de alguns valores absolutos se manterem - \textit{spambase}, por exemplo - o desvio padrão entre estes valores tiveram incrementos. Isto nos leva a entender que, como esperado, a normalização por classe insere, de certa forma, um ruído nos dados quando comparamos ao método do RIS1.
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de redução de instâncias utilizando o RIS2 (\%)}
+    \label{tab:table5}
+    \begin{tabular}{l|c|c|c}
+      \textbf{Base de dados} & \textbf{ RIS2 } & \textbf{FS - RIS2} & \textbf{RIS2 - FS}\\
+        \hline
+        $adult$ & $72.07 \pm 19.66$  & $\textbf{75.28} \pm \textbf{19.16}$ & $71.92 +  \pm 19.72$ \\
+        \hline
+        $appendicitis$ & $91.86 \pm 6.19$  & $\textbf{94.41} \pm \textbf{4.33}$ & $91.43 +  \pm 6.53$ \\
+        \hline
+        $balance$ & $\textbf{36.79} \pm \textbf{22.39}$  & $33.83 \pm 21.91$ & $36.62 +  \pm 22.21$ \\
+        \hline
+        $bupa$ & $64.66 \pm 26.1$  & $\textbf{65.05} \pm \textbf{22.93}$ & $64.14 +  \pm 26.56$ \\
+        \hline
+        $coil2000$ & $62.49 \pm 28.46$  & $\textbf{86.75} \pm \textbf{9.66}$ & $80.39 +  \pm 9.76$ \\
+        \hline
+        $connect-4$ & $44.91 \pm 22.12$  & $47.9 \pm 21.4$ & $\textbf{52.12} +  \pm \textbf{25.24}$ \\
+        \hline
+        $contraceptive$ & $\textbf{65.86} \pm \textbf{24.73}$  & $37.26 \pm 20.28$ & $65.6 +  \pm 25.0$ \\
+        \hline
+        $haberman$ & $\textbf{73.39} \pm \textbf{18.76}$  & $27.8 \pm 16.22$ & $72.69 +  \pm 18.55$ \\
+        \hline
+        $hayes-roth$ & $42.46 \pm 30.33$  & $\textbf{45.48} \pm \textbf{15.07}$ & $43.43 +  \pm 31.46$ \\
+        \hline
+        $heart$ & $48.33 \pm 32.57$  & $63.87 \pm 20.67$ & $\textbf{65.29} +  \pm \textbf{25.21}$ \\
+        \hline
+        $ionosphere$ & $\textbf{48.7} \pm \textbf{21.08}$  & $43.75 \pm 16.54$ & $48.12 +  \pm 21.6$ \\
+        \hline
+        $led7digit$ & $\textbf{41.13} \pm \textbf{26.15}$  & $9.28 \pm 3.17$ & $40.83 +  \pm 25.81$ \\
+        \hline
+        $marketing$ & $\textbf{50.11} \pm \textbf{37.49}$  & $33.41 \pm 19.65$ & $49.76 +  \pm 37.24$ \\
+        \hline
+        $monk-2$ & $46.02 \pm 20.55$  & $23.83 \pm 14.68$ & $\textbf{51.75} +  \pm \textbf{25.0}$ \\
+        \hline
+        $movement_libras$ & $\textbf{78.31} \pm \textbf{9.65}$  & $39.82 \pm 24.02$ & $77.62 +  \pm 10.03$ \\
+        \hline
+        $pima$ & $69.36 \pm 21.32$  & $\textbf{81.7} \pm \textbf{13.7}$ & $69.63 +  \pm 21.21$ \\
+        \hline
+        $satimage$ & $\textbf{72.65} \pm \textbf{24.28}$  & $25.57 \pm 27.1$ & $71.92 +  \pm 22.72$ \\
+        \hline
+        $segment$ & $51.47 \pm 34.73$  & $47.41 \pm 24.29$ & $\textbf{51.53} +  \pm \textbf{34.89}$ \\
+        \hline
+        $titanic$ & $36.5 \pm 26.1$  & $20.37 \pm 6.44$ & $\textbf{36.79} +  \pm \textbf{26.41}$ \\
+        \hline
+        $vowel$ & $\textbf{47.4} \pm \textbf{16.06}$  & $43.84 \pm 24.62$ & $46.14 +  \pm 16.02$ \\
+        \hline
+        $wine$ & $74.14 \pm 11.41$  & $\textbf{77.47} \pm \textbf{11.6}$ & $74.32 +  \pm 10.4$ \\
+        \hline
+        $winequality-red$ & $57.5 \pm 26.47$  & $42.15 \pm 27.91$ & $\textbf{57.83} +  \pm \textbf{26.35}$ \\
+        \hline
+        $winequality-white$ & $\textbf{58.03} \pm \textbf{30.68}$  & $40.3 \pm 28.28$ & $57.71 +  \pm 30.79$ \\
+        \hline
+        $yeast$ & $\textbf{50.95} \pm \textbf{32.02}$  & $32.64 \pm 27.95$ & $50.01 +  \pm 31.96$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+\newline
+\indent Outro dado interessante obtido foi a redução de parâmetros. Para todas as bases testadas, com exceção para o \textit{satimage}, nós obtivemos resultados de redução de atributos piores que no RIS1. Isto é, em certa maneira, esperado. Como o \textit{gini index} calcula a dispersão entre os atributos, ao realizarmos a normalização por classe no RIS2, nós estamos diminuindo essa dispersão. Com uma menor dispersão, mais próximos de zero serão os valores do \textit{gini index} entre os atributos.
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de redução de atributos utilizando o RIS2 (\%)}
+    \label{tab:table6}
+    \begin{tabular}{l|c|c}
+      \textbf{Base de dados} &\textbf{FS - RIS2} & \textbf{RIS2 - FS}\\
+        \hline
+        $adult$ & $\textbf{64.29} \pm \textbf{0.0}$  & $63.72 \pm 12.48$ \\
+        \hline
+        $appendicitis$ & $53.57 \pm 6.19$  & $\textbf{57.63} \pm \textbf{23.64}$ \\
+        \hline
+        $balance$ & $75.0 \pm 0.0$  & $\textbf{75.0} \pm \textbf{0.0}$ \\
+        \hline
+        $bupa$ & $62.5 \pm 11.02$  & $\textbf{66.1} \pm \textbf{17.12}$ \\
+        \hline
+        $coil2000$ & $67.21 \pm 1.24$  & $\textbf{68.2} \pm \textbf{7.11}$ \\
+        \hline
+        $connect-4$ & $66.67 \pm 0.0$  & $\textbf{86.9} \pm \textbf{8.42}$ \\
+        \hline
+        $contraceptive$ & $\textbf{88.89} \pm \textbf{0.0}$  & $82.2 \pm 18.47$ \\
+        \hline
+        $haberman$ & $\textbf{66.67} \pm \textbf{0.0}$  & $60.98 \pm 12.53$ \\
+        \hline
+        $hayes-roth$ & $\textbf{75.0} \pm \textbf{0.0}$  & $70.45 \pm 11.02$ \\
+        \hline
+        $heart$ & $50.0 \pm 3.85$  & $\textbf{50.09} \pm \textbf{14.39}$ \\
+        \hline
+        $ionosphere$ & $\textbf{67.42} \pm \textbf{2.0}$  & $64.5 \pm 8.0$ \\
+        \hline
+        $led7digit$ & $85.71 \pm 0.0$  & $\textbf{85.71} \pm \textbf{0.0}$ \\
+        \hline
+        $marketing$ & $\textbf{92.31} \pm \textbf{0.0}$  & $92.05 \pm 2.45$ \\
+        \hline
+        $monk-2$ & $\textbf{66.67} \pm \textbf{0.0}$  & $60.04 \pm 10.52$ \\
+        \hline
+        $movement_libras$ & $98.89 \pm 0.0$  & $\textbf{98.89} \pm \textbf{0.0}$ \\
+        \hline
+        $pima$ & $62.5 \pm 0.0$  & $\textbf{62.78} \pm \textbf{11.91}$ \\
+        \hline
+        $satimage$ & $97.22 \pm 0.0$  & $\textbf{97.22} \pm \textbf{0.0}$ \\
+        \hline
+        $segment$ & $94.74 \pm 0.0$  & $\textbf{94.74} \pm \textbf{0.0}$ \\
+        \hline
+        $titanic$ & $\textbf{66.67} \pm \textbf{0.0}$  & $47.35 \pm 16.45$ \\
+        \hline
+        $vowel$ & $92.31 \pm 0.0$  & $\textbf{92.31} \pm \textbf{0.0}$ \\
+        \hline
+        $wine$ & $55.77 \pm 3.33$  & $\textbf{63.64} \pm \textbf{10.98}$ \\
+        \hline
+        $winequality-red$ & $\textbf{90.91} \pm \textbf{0.0}$  & $80.99 \pm 13.68$ \\
+        \hline
+        $winequality-white$ & $\textbf{90.91} \pm \textbf{0.0}$  & $90.81 \pm 0.96$ \\
+        \hline
+        $yeast$ & $87.5 \pm 0.0$  & $\textbf{87.5} \pm \textbf{0.0}$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\includegraphics[width=12cm]{images/ris2_instance.png}
+\includegraphics[width=12cm]{images/ris2_attr.png}
+
+\subsection{RIS3}
+Nos experimentos utilizando o RIS3 percebemos que a base \textit{spambase} não obteve uma melhora com relação ao RIS2. O mesmo comportamento pode ser observado se olharmos para as outras bases. Isso era esperado pois já segue o que foi observado em \cite{ris}.
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de acerto utilizando o RIS3 (\%)}
+    \label{tab:table7}
+    \begin{tabular}{l|c|c|c}
+      \textbf{Base de dados} & \textbf{ RIS3 } & \textbf{FS - RIS3} & \textbf{RIS3 - FS}\\
+        \hline
+        $adult$ & $\textbf{74.64} \pm \textbf{0.81}$  & $62.71 \pm 6.0$ & $69.89 +  \pm 3.11$ \\
+        \hline
+        $appendicitis$ & $74.21 \pm 14.14$  & $\textbf{81.06} \pm \textbf{10.31}$ & $66.36 +  \pm 19.62$ \\
+        \hline
+        $balance$ & $32.98 \pm 10.92$  & $42.32 \pm 8.63$ & $\textbf{47.72} +  \pm \textbf{8.9}$ \\
+        \hline
+        $bupa$ & $\textbf{54.43} \pm \textbf{9.05}$  & $49.05 \pm 6.4$ & $52.94 +  \pm 9.26$ \\
+        \hline
+        $coil2000$ & $51.52 \pm 37.18$  & $82.49 \pm 19.8$ & $\textbf{85.68} +  \pm \textbf{13.43}$ \\
+        \hline
+        $connect-4$ & $64.22 \pm 1.51$  & $\textbf{64.72} \pm \textbf{1.72}$ & $53.22 +  \pm 13.67$ \\
+        \hline
+        $contraceptive$ & $\textbf{40.02} \pm \textbf{4.15}$  & $37.98 \pm 4.76$ & $37.92 +  \pm 4.33$ \\
+        \hline
+        $haberman$ & $53.14 \pm 14.77$  & $\textbf{70.07} \pm \textbf{7.9}$ & $51.56 +  \pm 15.33$ \\
+        \hline
+        $hayes-roth$ & $31.25 \pm 13.02$  & $\textbf{50.85} \pm \textbf{15.43}$ & $42.12 +  \pm 15.35$ \\
+        \hline
+        $heart$ & $55.01 \pm 8.61$  & $\textbf{57.15} \pm \textbf{8.32}$ & $54.97 +  \pm 10.98$ \\
+        \hline
+        $ionosphere$ & $51.88 \pm 14.83$  & $\textbf{64.71} \pm \textbf{10.68}$ & $46.3 +  \pm 11.91$ \\
+        \hline
+        $led7digit$ & $10.77 \pm 3.84$  & $\textbf{18.75} \pm \textbf{2.3}$ & $14.45 +  \pm 5.39$ \\
+        \hline
+        $marketing$ & $13.86 \pm 2.16$  & $\textbf{17.09} \pm \textbf{5.22}$ & $14.38 +  \pm 3.35$ \\
+        \hline
+        $monk-2$ & $50.63 \pm 6.45$  & $\textbf{68.1} \pm \textbf{9.92}$ & $54.2 +  \pm 10.14$ \\
+        \hline
+        $movement_libras$ & $7.1 \pm 2.61$  & $\textbf{13.26} \pm \textbf{6.66}$ & $12.59 +  \pm 5.38$ \\
+        \hline
+        $pima$ & $42.22 \pm 10.67$  & $\textbf{65.11} \pm \textbf{7.85}$ & $53.17 +  \pm 13.22$ \\
+        \hline
+        $satimage$ & $17.19 \pm 7.18$  & $30.41 \pm 11.28$ & $\textbf{41.61} +  \pm \textbf{8.47}$ \\
+        \hline
+        $segment$ & $15.7 \pm 2.04$  & $\textbf{35.08} \pm \textbf{15.84}$ & $33.03 +  \pm 15.78$ \\
+        \hline
+        $titanic$ & $63.89 \pm 8.12$  & $\textbf{77.67} \pm \textbf{1.78}$ & $71.08 +  \pm 8.1$ \\
+        \hline
+        $vowel$ & $8.59 \pm 1.6$  & $\textbf{12.94} \pm \textbf{6.92}$ & $11.35 +  \pm 4.49$ \\
+        \hline
+        $wine$ & $\textbf{51.05} \pm \textbf{10.87}$  & $46.12 \pm 11.18$ & $45.92 +  \pm 11.46$ \\
+        \hline
+        $winequality-red$ & $\textbf{38.39} \pm \textbf{5.66}$  & $36.98 \pm 11.33$ & $32.51 +  \pm 6.27$ \\
+        \hline
+        $winequality-white$ & $\textbf{30.05} \pm \textbf{8.36}$  & $29.02 \pm 10.68$ & $28.1 +  \pm 7.67$ \\
+        \hline
+        $yeast$ & $13.4 \pm 5.38$  & $\textbf{25.15} \pm \textbf{9.72}$ & $18.67 +  \pm 9.33$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Com relação a redução de instâncias obtivemos médias reduções absoluta maiores que no RIS1 e RIS2. Com exceção somente do experimento na base \textit{satimage} (FS-RIS3). Este comportamento também já esperado pois também foi encontrado quando feito em \cite{ris}.  Isso nos leva a concluir que a seleção de atributos não causa influência nos resultados de acerto médio e de redução de instâncias.
+
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de redução de instâncias utilizando o RIS3 (\%)}
+    \label{tab:table8}
+    \begin{tabular}{l|c|c|c}
+      \textbf{Base de dados} & \textbf{ RIS3 } & \textbf{FS - RIS3} & \textbf{RIS3 - FS}\\
+        \hline
+        $adult$ & $80.41 \pm 21.7$  & $\textbf{82.82} \pm \textbf{20.51}$ & $80.28 +  \pm 21.78$ \\
+        \hline
+        $appendicitis$ & $93.94 \pm 5.72$  & $\textbf{95.48} \pm \textbf{4.16}$ & $93.61 +  \pm 6.06$ \\
+        \hline
+        $balance$ & $\textbf{60.71} \pm \textbf{30.58}$  & $53.67 \pm 28.5$ & $59.61 +  \pm 30.07$ \\
+        \hline
+        $bupa$ & $74.51 \pm 27.45$  & $\textbf{79.17} \pm \textbf{25.01}$ & $73.87 +  \pm 28.06$ \\
+        \hline
+        $coil2000$ & $72.21 \pm 29.08$  & $\textbf{89.74} \pm \textbf{9.92}$ & $85.39 +  \pm 11.28$ \\
+        \hline
+        $connect-4$ & $\textbf{77.38} \pm \textbf{27.15}$  & $75.59 \pm 28.11$ & $74.52 +  \pm 29.09$ \\
+        \hline
+        $contraceptive$ & $\textbf{71.26} \pm \textbf{24.37}$  & $49.13 \pm 30.67$ & $70.98 +  \pm 24.74$ \\
+        \hline
+        $haberman$ & $\textbf{82.51} \pm \textbf{20.05}$  & $82.31 \pm 28.23$ & $81.9 +  \pm 20.17$ \\
+        \hline
+        $hayes-roth$ & $49.91 \pm 34.64$  & $\textbf{77.72} \pm \textbf{28.96}$ & $50.15 +  \pm 35.11$ \\
+        \hline
+        $heart$ & $74.51 \pm 41.93$  & $\textbf{77.21} \pm \textbf{22.3}$ & $72.38 +  \pm 26.12$ \\
+        \hline
+        $ionosphere$ & $73.87 \pm 25.37$  & $\textbf{81.58} \pm \textbf{24.55}$ & $73.65 +  \pm 25.97$ \\
+        \hline
+        $led7digit$ & $\textbf{46.11} \pm \textbf{29.36}$  & $10.2 \pm 4.2$ & $45.8 +  \pm 29.52$ \\
+        \hline
+        $marketing$ & $\textbf{51.58} \pm \textbf{38.42}$  & $32.32 \pm 18.45$ & $51.26 +  \pm 38.22$ \\
+        \hline
+        $monk-2$ & $84.02 \pm 31.28$  & $\textbf{84.04} \pm \textbf{29.25}$ & $80.99 +  \pm 31.21$ \\
+        \hline
+        $movement_libras$ & $\textbf{78.69} \pm \textbf{9.83}$  & $41.33 \pm 24.87$ & $78.13 +  \pm 10.22$ \\
+        \hline
+        $pima$ & $78.7 \pm 22.18$  & $\textbf{89.69} \pm \textbf{13.51}$ & $79.08 +  \pm 22.1$ \\
+        \hline
+        $satimage$ & $\textbf{86.98} \pm \textbf{29.17}$  & $32.23 \pm 31.56$ & $73.89 +  \pm 23.24$ \\
+        \hline
+        $segment$ & $53.37 \pm 35.32$  & $53.09 \pm 25.2$ & $\textbf{53.41} +  \pm \textbf{35.53}$ \\
+        \hline
+        $titanic$ & $79.44 \pm 31.11$  & $\textbf{90.82} \pm \textbf{28.72}$ & $79.23 +  \pm 31.29$ \\
+        \hline
+        $vowel$ & $\textbf{47.4} \pm \textbf{16.06}$  & $45.4 \pm 25.0$ & $46.14 +  \pm 16.02$ \\
+        \hline
+        $wine$ & $81.04 \pm 12.3$  & $81.2 \pm 12.8$ & $\textbf{81.3} +  \pm \textbf{11.84}$ \\
+        \hline
+        $winequality-red$ & $64.93 \pm 27.53$  & $49.67 \pm 32.68$ & $\textbf{65.4} +  \pm \textbf{27.48}$ \\
+        \hline
+        $winequality-white$ & $\textbf{62.03} \pm \textbf{31.43}$  & $47.61 \pm 31.5$ & $61.71 +  \pm 31.56$ \\
+        \hline
+        $yeast$ & $\textbf{53.45} \pm \textbf{33.04}$  & $36.59 \pm 30.51$ & $52.57 +  \pm 33.05$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+Com relação aos atributos, a expectativa que a redução fosse maior que o RIS2. Pois dado o fato que o RIS3 aumentaria ainda mais a redução de dados, retirando instâncias redundantes e assim diminuindo a dispersão, o algoritmo do \textit{gini index} não obteria uma alta dispersão entre os atributos. Porém não foi o que aconteceu. Percebemos que no caso de \textit{satimage} o desvio padrão sofreu uma alta e isto pode indicar que os resultados dos experimentos podem ter variado quando comparados ao RIS2. Para os outros casos o esperado aconteceu. Os resultados da redução de atributos foram melhores.
+\begin{table}[h!]
+  \begin{center}
+    \caption{Media de redução de atributos utilizando o RIS3 (\%)}
+    \label{tab:table9}
+    \begin{tabular}{l|c|c}
+      \textbf{Base de dados} &\textbf{FS - RIS3} & \textbf{RIS3 - FS}\\
+        \hline
+        $adult$ & $\textbf{64.29} \pm \textbf{0.0}$  & $58.2 \pm 12.81$ \\
+        \hline
+        $appendicitis$ & $53.57 \pm 6.19$  & $\textbf{66.88} \pm \textbf{23.84}$ \\
+        \hline
+        $balance$ & $\textbf{75.0} \pm \textbf{0.0}$  & $65.06 \pm 14.86$ \\
+        \hline
+        $bupa$ & $62.5 \pm 11.02$  & $\textbf{62.5} \pm \textbf{17.81}$ \\
+        \hline
+        $coil2000$ & $\textbf{67.21} \pm \textbf{1.24}$  & $66.3 \pm 5.72$ \\
+        \hline
+        $connect-4$ & $66.67 \pm 0.0$  & $\textbf{82.52} \pm \textbf{13.99}$ \\
+        \hline
+        $contraceptive$ & $\textbf{88.89} \pm \textbf{0.0}$  & $72.6 \pm 20.72$ \\
+        \hline
+        $haberman$ & $\textbf{66.67} \pm \textbf{0.0}$  & $59.47 \pm 13.72$ \\
+        \hline
+        $hayes-roth$ & $\textbf{75.0} \pm \textbf{0.0}$  & $70.74 \pm 12.63$ \\
+        \hline
+        $heart$ & $\textbf{50.0} \pm \textbf{3.85}$  & $45.28 \pm 18.31$ \\
+        \hline
+        $ionosphere$ & $\textbf{67.42} \pm \textbf{2.0}$  & $65.25 \pm 14.51$ \\
+        \hline
+        $led7digit$ & $85.71 \pm 0.0$  & $\textbf{85.71} \pm \textbf{0.0}$ \\
+        \hline
+        $marketing$ & $92.31 \pm 0.0$  & $\textbf{92.31} \pm \textbf{0.0}$ \\
+        \hline
+        $monk-2$ & $\textbf{66.67} \pm \textbf{0.0}$  & $58.14 \pm 17.77$ \\
+        \hline
+        $movement_libras$ & $98.89 \pm 0.0$  & $\textbf{98.89} \pm \textbf{0.0}$ \\
+        \hline
+        $pima$ & $62.5 \pm 0.0$  & $\textbf{63.07} \pm \textbf{18.16}$ \\
+        \hline
+        $satimage$ & $\textbf{97.22} \pm \textbf{0.0}$  & $95.3 \pm 9.37$ \\
+        \hline
+        $segment$ & $94.74 \pm 0.0$  & $\textbf{94.74} \pm \textbf{0.0}$ \\
+        \hline
+        $titanic$ & $\textbf{66.67} \pm \textbf{0.0}$  & $51.89 \pm 16.56$ \\
+        \hline
+        $vowel$ & $92.31 \pm 0.0$  & $\textbf{92.31} \pm \textbf{0.0}$ \\
+        \hline
+        $wine$ & $\textbf{55.77} \pm \textbf{3.33}$  & $54.37 \pm 15.64$ \\
+        \hline
+        $winequality-red$ & $\textbf{90.91} \pm \textbf{0.0}$  & $90.81 \pm 0.96$ \\
+        \hline
+        $winequality-white$ & $90.91 \pm 0.0$  & $\textbf{90.91} \pm \textbf{0.0}$ \\
+        \hline
+        $yeast$ & $87.5 \pm 0.0$  & $\textbf{87.5} \pm \textbf{0.0}$ \\
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Como observado em \cite{ris} foi possível observar que o RIS1 obtém a melhor média de acerto enquanto o RIS3 obteve a melhor redução do número de instâncias. Para nossos testes mais informação significou um melhor acerto.
+
+\includegraphics[width=12cm]{images/ris3_instance.png}
+\includegraphics[width=12cm]{images/ris3_attr.png}
+
+\section{Algumas observações}
+Como o código do RIS foi feito com o banco KEEL em mente, os experimentos só estão sendo possíveis com base dados que pertençam ao banco do KEEL.
+Como dito anteriormente, os experimentos mostrados neste relatório seguiram os resultados já obtidos por \cite{ris}. A maior média de acerto foi obtida no RIS1 e a maior média de redução de instâncias foi obtida utilizando o RIS3. Para o caso da redução de atributos o \textit{gini index}, da forma que esta implementado, reduz mais que 50\% em todos os experimentos quando recebe a base completa como entrada. Para os casos em que o RIS é executado \textit{a priori} observamos que os melhores resultados são obtidos quando não normalizamos a base de dados, isto é, no RIS1.
+
+\section{Conclusão}
+Não foi possível observar um desempenho parecido entre as bases \textit{coil2000} e \textit{spambase}. A premissa posta no início deste relatório de que bases com mais instâncias e atributos obteriam resultados parecidos não foi confirmada. Não é possível afirmar a causa seria causa da diferença observada principalmente nos experimentos que envolveram o RIS2 e RIS3.
+\printbibliography
+
+\end{document}
